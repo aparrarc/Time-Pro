@@ -1,17 +1,65 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Filter, Download, Clock, Coffee, ArrowRight, CalendarDays } from 'lucide-react';
+import { Download, Clock, Coffee, ArrowRight, CalendarDays, FileSpreadsheet, FileText } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
+import { exportToCsv, exportToPdf } from '../lib/exportUtils';
 import type { TimeEntry } from '../types';
 
 export function HistoryPage() {
     const { todayEntries, fetchHistory } = useAppStore();
     const [filter, setFilter] = useState<'week' | 'month' | 'all'>('week');
+    const [showExportMenu, setShowExportMenu] = useState(false);
+    const exportRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         fetchHistory(filter);
     }, [filter, fetchHistory]);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        const handleClick = (e: MouseEvent) => {
+            if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+                setShowExportMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
+    const getExportData = () => {
+        const headers = ['Fecha', 'Entrada', 'Salida', 'Duración', 'Pausas'];
+        const rows = todayEntries.map(entry => [
+            format(new Date(entry.clock_in), 'dd/MM/yyyy'),
+            format(new Date(entry.clock_in), 'HH:mm'),
+            entry.clock_out ? format(new Date(entry.clock_out), 'HH:mm') : 'En curso',
+            entry.clock_out ? formatDuration(entry) : 'En curso',
+            entry.breaks?.length?.toString() || '0',
+        ]);
+        return { headers, rows };
+    };
+
+    const handleExportCsv = () => {
+        const { headers, rows } = getExportData();
+        exportToCsv({
+            filename: `fichajes_${filter}_${format(new Date(), 'yyyy-MM-dd')}`,
+            headers,
+            rows,
+        });
+        setShowExportMenu(false);
+    };
+
+    const handleExportPdf = () => {
+        const { headers, rows } = getExportData();
+        const filterLabel = filter === 'week' ? 'esta semana' : filter === 'month' ? 'este mes' : 'todos';
+        exportToPdf({
+            title: 'Historial de fichajes',
+            subtitle: `Período: ${filterLabel} · ${todayEntries.length} registros`,
+            headers,
+            rows,
+        });
+        setShowExportMenu(false);
+    };
 
     // Group by date
     const groupedEntries = todayEntries.reduce((acc, entry) => {
@@ -41,10 +89,67 @@ export function HistoryPage() {
                     <h1 className="page-title">Historial de fichajes</h1>
                     <p className="page-subtitle">Consulta y exporta tus registros de entrada y salida</p>
                 </div>
-                <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Download size={16} />
-                    Exportar
-                </button>
+                <div ref={exportRef} style={{ position: 'relative' }}>
+                    <button
+                        className="btn btn-outline"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        onClick={() => setShowExportMenu(!showExportMenu)}
+                    >
+                        <Download size={16} />
+                        Exportar
+                    </button>
+                    {showExportMenu && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '100%',
+                            right: 0,
+                            marginTop: '0.5rem',
+                            background: 'white',
+                            border: '1px solid var(--color-border)',
+                            borderRadius: 'var(--radius-lg)',
+                            boxShadow: 'var(--shadow-lg)',
+                            minWidth: '200px',
+                            zIndex: 50,
+                            overflow: 'hidden',
+                        }}>
+                            <button
+                                onClick={handleExportCsv}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                    width: '100%', padding: '0.75rem 1rem',
+                                    border: 'none', background: 'transparent', cursor: 'pointer',
+                                    fontSize: '0.8125rem', color: 'var(--color-text-primary)',
+                                    borderBottom: '1px solid var(--color-border-light)',
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-muted)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            >
+                                <FileSpreadsheet size={16} style={{ color: '#059669' }} />
+                                <div style={{ textAlign: 'left' }}>
+                                    <div style={{ fontWeight: 600 }}>Exportar CSV</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Compatible con Excel</div>
+                                </div>
+                            </button>
+                            <button
+                                onClick={handleExportPdf}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                    width: '100%', padding: '0.75rem 1rem',
+                                    border: 'none', background: 'transparent', cursor: 'pointer',
+                                    fontSize: '0.8125rem', color: 'var(--color-text-primary)',
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-muted)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            >
+                                <FileText size={16} style={{ color: '#dc2626' }} />
+                                <div style={{ textAlign: 'left' }}>
+                                    <div style={{ fontWeight: 600 }}>Exportar PDF</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Documento formateado</div>
+                                </div>
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Filter tabs */}

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { ToastContainer } from '../ui/Toast';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -18,6 +19,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     {children}
                 </main>
             </div>
+            <ToastContainer />
         </div>
     );
 }

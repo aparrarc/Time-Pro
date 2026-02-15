@@ -32,6 +32,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
     const handleClockToggle = () => {
         if (isWorking) {
+            if (!confirm('¿Seguro que deseas fichar salida?')) return;
             clockOut();
         } else {
             clockIn();

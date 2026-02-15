@@ -4,6 +4,12 @@ import { supabase } from '../lib/supabase';
 import type { User, TimeEntry, Break, WorkStatus, AbsenceRequest } from '../types';
 import { isDemoMode, setDemoMode, DEMO_USER, DEMO_USERS, DEMO_TIME_ENTRIES, DEMO_ABSENCES, DEMO_LIVE_ATTENDANCE } from '../lib/demoData';
 
+export interface Toast {
+    id: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    message: string;
+}
+
 interface AppState {
     // Auth
     user: User | null;
@@ -39,6 +45,7 @@ interface AppState {
     // UI
     isDarkMode: boolean;
     language: 'es' | 'ca' | 'en';
+    toasts: Toast[];
 
     // Actions
     initialize: () => Promise<void>;
@@ -72,6 +79,8 @@ interface AppState {
 
     toggleDarkMode: () => void;
     setLanguage: (lang: 'es' | 'ca' | 'en') => void;
+    addToast: (type: Toast['type'], message: string) => void;
+    removeToast: (id: string) => void;
 
     fetchTodayData: () => Promise<void>;
     updateTodayHours: () => void;
@@ -102,6 +111,7 @@ export const useAppStore = create<AppState>()(
 
             isDarkMode: false,
             language: 'es',
+            toasts: [],
 
             // Actions
             initialize: async () => {
@@ -258,6 +268,7 @@ export const useAppStore = create<AppState>()(
                         currentStatus: 'working',
                         todayEntries: [newEntry, ...get().todayEntries],
                     });
+                    get().addToast('success', '✅ Entrada fichada correctamente');
                     return;
                 }
 
@@ -273,6 +284,9 @@ export const useAppStore = create<AppState>()(
                         currentStatus: 'working',
                         todayEntries: [data as TimeEntry, ...get().todayEntries]
                     });
+                    get().addToast('success', '✅ Entrada fichada correctamente');
+                } else {
+                    get().addToast('error', 'Error al fichar entrada');
                 }
             },
 
@@ -290,6 +304,7 @@ export const useAppStore = create<AppState>()(
                         ),
                     });
                     get().updateTodayHours();
+                    get().addToast('info', '🏠 Salida fichada — ¡buen trabajo!');
                     return;
                 }
 
@@ -309,6 +324,9 @@ export const useAppStore = create<AppState>()(
                         )
                     });
                     get().updateTodayHours();
+                    get().addToast('info', '🏠 Salida fichada — ¡buen trabajo!');
+                } else {
+                    get().addToast('error', 'Error al fichar salida');
                 }
             },
 
@@ -324,6 +342,7 @@ export const useAppStore = create<AppState>()(
                         start_time: new Date().toISOString(),
                     };
                     set({ activeBreak: newBreak, currentStatus: 'on_break' });
+                    get().addToast('info', '☕ Pausa iniciada');
                     return;
                 }
 
@@ -342,6 +361,9 @@ export const useAppStore = create<AppState>()(
                         activeBreak: data as Break,
                         currentStatus: 'on_break'
                     });
+                    get().addToast('info', '☕ Pausa iniciada');
+                } else {
+                    get().addToast('error', 'Error al iniciar pausa');
                 }
             },
 
@@ -351,6 +373,7 @@ export const useAppStore = create<AppState>()(
 
                 if (isDemoMode) {
                     set({ activeBreak: null, currentStatus: 'working' });
+                    get().addToast('success', '💪 De vuelta al trabajo');
                     return;
                 }
 
@@ -364,6 +387,9 @@ export const useAppStore = create<AppState>()(
                         activeBreak: null,
                         currentStatus: 'working'
                     });
+                    get().addToast('success', '💪 De vuelta al trabajo');
+                } else {
+                    get().addToast('error', 'Error al terminar pausa');
                 }
             },
 
@@ -552,6 +578,9 @@ export const useAppStore = create<AppState>()(
 
                 if (data && !error) {
                     set({ absenceRequests: [data as AbsenceRequest, ...get().absenceRequests] });
+                    get().addToast('success', '📋 Solicitud de ausencia enviada');
+                } else {
+                    get().addToast('error', 'Error al enviar solicitud');
                 }
             },
 
@@ -677,6 +706,15 @@ export const useAppStore = create<AppState>()(
             toggleDarkMode: () => set({ isDarkMode: !get().isDarkMode }),
 
             setLanguage: (lang) => set({ language: lang }),
+
+            addToast: (type, message) => {
+                const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+                set({ toasts: [...get().toasts, { id, type, message }] });
+            },
+
+            removeToast: (id) => {
+                set({ toasts: get().toasts.filter(t => t.id !== id) });
+            },
 
             updateTodayHours: () => {
                 const entries = get().todayEntries;

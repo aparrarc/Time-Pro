@@ -1,15 +1,50 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Download, TrendingUp, Clock, Briefcase, Coffee } from 'lucide-react';
+import { Download, TrendingUp, Clock, Briefcase, Coffee, FileSpreadsheet, FileText } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
+import { exportToCsv, exportToPdf } from '../lib/exportUtils';
 
 export function ReportsPage() {
     const { reports, fetchReports } = useAppStore();
     const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
+    const [showExportMenu, setShowExportMenu] = useState(false);
+    const exportRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         fetchReports(period);
     }, [period, fetchReports]);
+
+    useEffect(() => {
+        const handleClick = (e: MouseEvent) => {
+            if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+                setShowExportMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
+    const handleExportCsv = () => {
+        if (!reports) return;
+        exportToCsv({
+            filename: `reporte_${period}_${new Date().toISOString().slice(0, 10)}`,
+            headers: ['Día', 'Horas'],
+            rows: reports.weeklyHours.map((d: any) => [d.name, d.hours.toString()]),
+        });
+        setShowExportMenu(false);
+    };
+
+    const handleExportPdf = () => {
+        if (!reports) return;
+        const periodLabel = period === 'week' ? 'Semanal' : period === 'month' ? 'Mensual' : 'Anual';
+        exportToPdf({
+            title: `Reporte ${periodLabel}`,
+            subtitle: `Generado el ${new Date().toLocaleDateString('es-ES')}`,
+            headers: ['Día', 'Horas'],
+            rows: reports.weeklyHours.map((d: any) => [d.name, `${d.hours}h`]),
+        });
+        setShowExportMenu(false);
+    };
 
     if (!reports) {
         return (
@@ -31,10 +66,56 @@ export function ReportsPage() {
                     <h1 className="page-title">Reportes</h1>
                     <p className="page-subtitle">Análisis y exportación de datos de tiempo</p>
                 </div>
-                <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Download size={16} />
-                    Exportar
-                </button>
+                <div ref={exportRef} style={{ position: 'relative' }}>
+                    <button
+                        className="btn btn-outline"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        onClick={() => setShowExportMenu(!showExportMenu)}
+                    >
+                        <Download size={16} />
+                        Exportar
+                    </button>
+                    {showExportMenu && (
+                        <div style={{
+                            position: 'absolute', top: '100%', right: 0, marginTop: '0.5rem',
+                            background: 'white', border: '1px solid var(--color-border)',
+                            borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)',
+                            minWidth: '200px', zIndex: 50, overflow: 'hidden',
+                        }}>
+                            <button onClick={handleExportCsv} style={{
+                                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                width: '100%', padding: '0.75rem 1rem',
+                                border: 'none', background: 'transparent', cursor: 'pointer',
+                                fontSize: '0.8125rem', color: 'var(--color-text-primary)',
+                                borderBottom: '1px solid var(--color-border-light)',
+                            }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-muted)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            >
+                                <FileSpreadsheet size={16} style={{ color: '#059669' }} />
+                                <div style={{ textAlign: 'left' }}>
+                                    <div style={{ fontWeight: 600 }}>Exportar CSV</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Compatible con Excel</div>
+                                </div>
+                            </button>
+                            <button onClick={handleExportPdf} style={{
+                                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                width: '100%', padding: '0.75rem 1rem',
+                                border: 'none', background: 'transparent', cursor: 'pointer',
+                                fontSize: '0.8125rem', color: 'var(--color-text-primary)',
+                            }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-muted)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            >
+                                <FileText size={16} style={{ color: '#dc2626' }} />
+                                <div style={{ textAlign: 'left' }}>
+                                    <div style={{ fontWeight: 600 }}>Exportar PDF</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Documento formateado</div>
+                                </div>
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Period selector */}

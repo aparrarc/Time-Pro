@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isSameMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Plus, Palmtree, Thermometer, User, CalendarDays, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Palmtree, Thermometer, User, CalendarDays, X, Send, CheckCircle } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 
 const absenceTypeConfig = {
@@ -18,13 +18,45 @@ const statusConfig = {
 };
 
 export function AbsencesPage() {
-    const { user, absenceRequests, fetchAbsences } = useAppStore();
+    const { user, absenceRequests, fetchAbsences, requestAbsence } = useAppStore();
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [showForm, setShowForm] = useState(false);
+    const [formSubmitted, setFormSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        absenceType: 'vacation' as keyof typeof absenceTypeConfig,
+        startDate: '',
+        endDate: '',
+        reason: '',
+    });
 
     useEffect(() => {
         fetchAbsences();
     }, [fetchAbsences]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            if (requestAbsence) {
+                await requestAbsence({
+                    absence_type: formData.absenceType,
+                    start_date: formData.startDate,
+                    end_date: formData.endDate || formData.startDate,
+                    reason: formData.reason,
+                });
+            }
+            setFormSubmitted(true);
+            setTimeout(() => {
+                setShowForm(false);
+                setFormSubmitted(false);
+                setFormData({ absenceType: 'vacation', startDate: '', endDate: '', reason: '' });
+            }, 2000);
+        } catch {
+            // handle errors
+        }
+        setIsSubmitting(false);
+    };
 
     const days = eachDayOfInterval({
         start: startOfMonth(currentMonth),
@@ -60,13 +92,154 @@ export function AbsencesPage() {
                 </div>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="btn btn-primary"
+                    className={`btn ${showForm ? 'btn-secondary' : 'btn-primary'}`}
                     style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                 >
-                    <Plus size={16} />
-                    Nueva solicitud
+                    {showForm ? <X size={16} /> : <Plus size={16} />}
+                    {showForm ? 'Cancelar' : 'Nueva solicitud'}
                 </button>
             </div>
+
+            {/* New absence request form */}
+            {showForm && (
+                <div className="card" style={{ padding: '1.5rem', border: '2px solid var(--color-primary-light)' }}>
+                    {formSubmitted ? (
+                        <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                            <CheckCircle size={48} style={{ color: '#10b981', marginBottom: '1rem', margin: '0 auto 1rem' }} />
+                            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
+                                ¡Solicitud enviada!
+                            </h3>
+                            <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
+                                Tu solicitud ha sido registrada y está pendiente de aprobación.
+                            </p>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleSubmit}>
+                            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Plus size={18} style={{ color: 'var(--color-primary)' }} />
+                                Nueva solicitud de ausencia
+                            </h3>
+
+                            {/* Absence type selector */}
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-text-primary)', display: 'block', marginBottom: '0.5rem' }}>
+                                    Tipo de ausencia
+                                </label>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem' }}>
+                                    {Object.entries(absenceTypeConfig).map(([key, config]) => {
+                                        const Icon = config.icon;
+                                        const isSelected = formData.absenceType === key;
+                                        return (
+                                            <button
+                                                key={key}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, absenceType: key as any })}
+                                                style={{
+                                                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                    padding: '0.75rem',
+                                                    border: `2px solid ${isSelected ? config.color : 'var(--color-border-light)'}`,
+                                                    borderRadius: 'var(--radius-lg)',
+                                                    background: isSelected ? config.bg : 'transparent',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.15s',
+                                                    fontSize: '0.8125rem',
+                                                    fontWeight: isSelected ? 600 : 400,
+                                                    color: isSelected ? config.color : 'var(--color-text-secondary)',
+                                                }}
+                                            >
+                                                <Icon size={18} />
+                                                {config.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Dates */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-text-primary)', display: 'block', marginBottom: '0.375rem' }}>
+                                        Fecha inicio *
+                                    </label>
+                                    <input
+                                        className="input"
+                                        type="date"
+                                        required
+                                        value={formData.startDate}
+                                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-text-primary)', display: 'block', marginBottom: '0.375rem' }}>
+                                        Fecha fin
+                                    </label>
+                                    <input
+                                        className="input"
+                                        type="date"
+                                        value={formData.endDate}
+                                        min={formData.startDate}
+                                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                    />
+                                    <p style={{ fontSize: '0.6875rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+                                        Déjalo vacío para un solo día
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Reason */}
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-text-primary)', display: 'block', marginBottom: '0.375rem' }}>
+                                    Motivo (opcional)
+                                </label>
+                                <textarea
+                                    className="input"
+                                    value={formData.reason}
+                                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                                    placeholder="Describe brevemente el motivo de la ausencia..."
+                                    rows={3}
+                                    style={{ resize: 'vertical', minHeight: '80px' }}
+                                />
+                            </div>
+
+                            {/* Submit */}
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowForm(false)}
+                                    className="btn btn-secondary btn-md"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary btn-md"
+                                    disabled={!formData.startDate || isSubmitting}
+                                    style={{ minWidth: '160px' }}
+                                >
+                                    {isSubmitting ? (
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <span style={{
+                                                width: 16, height: 16,
+                                                border: '2px solid rgba(255,255,255,0.3)',
+                                                borderTop: '2px solid white',
+                                                borderRadius: '50%',
+                                                animation: 'spin 0.6s linear infinite',
+                                                display: 'inline-block',
+                                            }} />
+                                            Enviando...
+                                        </span>
+                                    ) : (
+                                        <>
+                                            <Send size={16} />
+                                            Enviar solicitud
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                </div>
+            )}
 
             {/* Vacation balance */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

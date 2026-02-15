@@ -37,6 +37,7 @@ export function DashboardPage() {
     } = useAppStore();
 
     const [now, setNow] = useState(new Date());
+    const [isClocking, setIsClocking] = useState(false);
     const isAdmin = user?.role === 'admin';
 
     useEffect(() => {
@@ -47,6 +48,31 @@ export function DashboardPage() {
     useEffect(() => {
         if (isAdmin) fetchLiveAttendance();
     }, [isAdmin, fetchLiveAttendance]);
+
+    const handleClockIn = async () => {
+        setIsClocking(true);
+        await clockIn();
+        setIsClocking(false);
+    };
+
+    const handleClockOut = async () => {
+        if (!confirm('¿Seguro que deseas fichar salida?')) return;
+        setIsClocking(true);
+        await clockOut();
+        setIsClocking(false);
+    };
+
+    const handleStartBreak = async (type: 'coffee' | 'lunch') => {
+        setIsClocking(true);
+        await startBreak(type);
+        setIsClocking(false);
+    };
+
+    const handleEndBreak = async () => {
+        setIsClocking(true);
+        await endBreak();
+        setIsClocking(false);
+    };
 
     const formatTime = (date: Date) => {
         return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -65,6 +91,15 @@ export function DashboardPage() {
         const s = Math.floor((diff % 60000) / 1000);
         return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     };
+
+    // Live hours today = completed entries + currently elapsed
+    const liveHoursToday = (() => {
+        if (!activeTimeEntry) return todayHours;
+        const start = new Date(activeTimeEntry.clock_in);
+        const elapsedMs = now.getTime() - start.getTime();
+        const elapsedHours = elapsedMs / 3600000;
+        return todayHours + Math.max(0, elapsedHours);
+    })();
 
     const statusTexts: Record<string, string> = {
         working: 'Trabajando',
@@ -108,8 +143,8 @@ export function DashboardPage() {
 
                     <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                         {currentStatus === 'not_working' && (
-                            <button className="clock-btn clock-btn-start" onClick={clockIn}>
-                                <Play size={18} fill="currentColor" />
+                            <button className="clock-btn clock-btn-start" onClick={handleClockIn} disabled={isClocking}>
+                                {isClocking ? <span className="spinner-sm" /> : <Play size={18} fill="currentColor" />}
                                 Fichar entrada
                             </button>
                         )}
@@ -117,20 +152,21 @@ export function DashboardPage() {
                             <>
                                 <button
                                     className="clock-btn clock-btn-stop"
-                                    onClick={() => startBreak('coffee')}
+                                    onClick={() => handleStartBreak('coffee')}
+                                    disabled={isClocking}
                                 >
-                                    <Coffee size={18} />
+                                    {isClocking ? <span className="spinner-sm" /> : <Coffee size={18} />}
                                     Pausa
                                 </button>
-                                <button className="clock-btn clock-btn-stop" onClick={clockOut}>
-                                    <Square size={18} fill="currentColor" />
+                                <button className="clock-btn clock-btn-end" onClick={handleClockOut} disabled={isClocking}>
+                                    {isClocking ? <span className="spinner-sm" /> : <Square size={18} fill="currentColor" />}
                                     Fichar salida
                                 </button>
                             </>
                         )}
                         {currentStatus === 'on_break' && (
-                            <button className="clock-btn clock-btn-start" onClick={endBreak}>
-                                <Play size={18} fill="currentColor" />
+                            <button className="clock-btn clock-btn-start" onClick={handleEndBreak} disabled={isClocking}>
+                                {isClocking ? <span className="spinner-sm" /> : <Play size={18} fill="currentColor" />}
                                 Retomar trabajo
                             </button>
                         )}
@@ -147,7 +183,7 @@ export function DashboardPage() {
                         </div>
                     </div>
                     <div>
-                        <div className="stat-card-value">{todayHours.toFixed(1)}h</div>
+                        <div className="stat-card-value">{liveHoursToday.toFixed(1)}h</div>
                         <div className="stat-card-label">Horas hoy</div>
                     </div>
                 </div>

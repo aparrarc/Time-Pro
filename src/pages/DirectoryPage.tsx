@@ -1,8 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Mail, Phone, MapPin, Building2 } from 'lucide-react';
 import { Avatar } from '../components/ui';
 import { useAppStore } from '../store/appStore';
 import { isDemoMode, DEMO_USERS } from '../lib/demoData';
+
+const departmentLabels: Record<string, string> = {
+    'dept-001': 'Desarrollo',
+    'dept-002': 'Ventas',
+    'dept-003': 'Marketing',
+    'dept-004': 'Administración',
+    'dept-005': 'RRHH',
+    'dept-006': 'Soporte',
+    'dept-007': 'Diseño',
+    'dept-008': 'Operaciones',
+};
 
 export function DirectoryPage() {
     const { allUsers, fetchAllUsers } = useAppStore();
@@ -12,10 +23,15 @@ export function DirectoryPage() {
     // Use demo users or real users
     const users = isDemoMode ? DEMO_USERS : allUsers;
 
-    // Fetch if needed
-    if (!isDemoMode && allUsers.length === 0) {
-        fetchAllUsers();
-    }
+    // Fetch on mount (not in render!)
+    useEffect(() => {
+        if (!isDemoMode && allUsers.length === 0) {
+            fetchAllUsers();
+        }
+    }, []);
+
+    const getDeptName = (deptId: string | null | undefined) =>
+        deptId ? (departmentLabels[deptId] || deptId) : 'Sin departamento';
 
     const departments = ['all', ...new Set(users.map(u => u.department_id || 'Sin departamento'))];
 
@@ -103,7 +119,7 @@ export function DirectoryPage() {
                             )}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}>
                                 <Building2 size={14} style={{ flexShrink: 0, color: 'var(--color-text-muted)' }} />
-                                <span>{user.department_id || 'Sin departamento'}</span>
+                                <span>{getDeptName(user.department_id)}</span>
                             </div>
                         </div>
                     </div>

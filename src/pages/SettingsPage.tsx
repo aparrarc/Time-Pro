@@ -1,11 +1,11 @@
-import { Bell, Globe, Shield, LogOut, ChevronRight, Moon, Sun, Camera, Mail, Phone, Building, Briefcase } from 'lucide-react';
+import { Bell, Globe, Shield, LogOut, ChevronRight, Camera, Mail, Phone, Building, Briefcase } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Avatar } from '../components/ui';
 import { useAppStore } from '../store/appStore';
 
 export function SettingsPage() {
     const navigate = useNavigate();
-    const { user, isDarkMode, toggleDarkMode, language, logout } = useAppStore();
+    const { user, language, logout } = useAppStore();
 
     const handleLogout = async () => {
         await logout();
@@ -80,32 +80,6 @@ export function SettingsPage() {
                     Preferencias
                 </h3>
                 <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                    {/* Dark mode toggle */}
-                    <button
-                        onClick={toggleDarkMode}
-                        className="w-full flex items-center gap-4 py-4 px-5 transition-colors"
-                        style={{ borderBottom: '1px solid var(--color-border)' }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-secondary)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                    >
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: isDarkMode ? '#1e1b4b' : '#fef3c7' }}>
-                            {isDarkMode ? <Moon size={18} style={{ color: '#a5b4fc' }} /> : <Sun size={18} style={{ color: '#d97706' }} />}
-                        </div>
-                        <div className="flex-1 text-left">
-                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Tema</p>
-                            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{isDarkMode ? 'Modo oscuro' : 'Modo claro'}</p>
-                        </div>
-                        <div
-                            className="relative w-11 h-6 rounded-full transition-colors"
-                            style={{ background: isDarkMode ? 'var(--color-primary)' : '#d1d5db' }}
-                        >
-                            <div
-                                className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform"
-                                style={{ transform: isDarkMode ? 'translateX(22px)' : 'translateX(2px)' }}
-                            />
-                        </div>
-                    </button>
-
                     {/* Language */}
                     <button
                         className="w-full flex items-center gap-4 py-4 px-5 transition-colors"

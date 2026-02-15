@@ -137,6 +137,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                             <Shield size={20} className="sidebar-item-icon" />
                             <span>Privacidad RGPD</span>
                         </NavLink>
+                        <NavLink
+                            to="/settings"
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                                `sidebar-item ${isActive ? 'active' : ''}`
+                            }
+                        >
+                            <Settings size={20} className="sidebar-item-icon" />
+                            <span>Configuración</span>
+                        </NavLink>
                     </div>
                 </nav>
 
