@@ -1,4 +1,4 @@
-import { User, Bell, Globe, Shield, LogOut, ChevronRight, Moon, Sun, Camera, Mail, Phone, Building, Briefcase } from 'lucide-react';
+import { Bell, Globe, Shield, LogOut, ChevronRight, Moon, Sun, Camera, Mail, Phone, Building, Briefcase } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Avatar } from '../components/ui';
 import { useAppStore } from '../store/appStore';

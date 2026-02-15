@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, CheckCircle, Mail, Lock, User as UserIcon, Phone, ChevronLeft, XCircle, Eye, EyeOff, FileText, Fingerprint } from 'lucide-react';
+import { Shield, ChevronLeft, XCircle, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../components/ui';
 import { useAppStore } from '../store/appStore';
 
