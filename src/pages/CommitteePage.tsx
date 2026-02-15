@@ -129,7 +129,7 @@ export function CommitteePage() {
             <div className="grid-stats" style={{ marginBottom: '1.5rem' }}>
                 <div className="stat-card">
                     <div className="stat-card-header">
-                        <div className="stat-card-icon" style={{ background: '#ECFDF5', color: '#059669' }}>
+                        <div className="stat-card-icon" style={{ background: 'var(--color-icon-bg-success)', color: '#059669' }}>
                             <Building2 size={20} />
                         </div>
                     </div>

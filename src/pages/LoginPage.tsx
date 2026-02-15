@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, LogIn, Zap, Clock, Users, Shield, BarChart3, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, Zap, Clock, Users, Shield, BarChart3, ArrowRight, KeyRound, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAppStore } from '../store/appStore';
 
@@ -20,6 +20,11 @@ export function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showResetForm, setShowResetForm] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetSent, setResetSent] = useState(false);
+    const [resetLoading, setResetLoading] = useState(false);
+    const [resetError, setResetError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,6 +50,24 @@ export function LoginPage() {
     const handleDemoLogin = () => {
         demoLogin();
         navigate('/');
+    };
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setResetError('');
+        setResetLoading(true);
+        try {
+            const redirectUrl = `${window.location.origin}/reset-password`;
+            const { error: resetErr } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+                redirectTo: redirectUrl,
+            });
+            if (resetErr) throw resetErr;
+            setResetSent(true);
+        } catch (err: any) {
+            setResetError(err.message || 'Error al enviar el enlace de recuperación');
+        } finally {
+            setResetLoading(false);
+        }
     };
 
     return (
@@ -219,13 +242,13 @@ export function LoginPage() {
             </div>
 
             {/* ============= RIGHT PANEL — Login Form ============= */}
-            <div style={{
+            <div className="login-right-panel" style={{
                 flex: '1 1 45%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '2rem',
-                background: 'linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%)',
+                background: 'var(--color-bg)',
                 position: 'relative',
             }}>
                 {/* Subtle decorative pattern */}
@@ -249,14 +272,14 @@ export function LoginPage() {
                             width: '40px',
                             height: '40px',
                             borderRadius: '10px',
-                            background: '#4F46E5',
+                            background: 'var(--color-brand)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                         }}>
                             <Clock size={20} color="white" />
                         </div>
-                        <span style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1e293b' }}>TimeTrack Pro</span>
+                        <span style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>TimeTrack Pro</span>
                     </div>
 
                     {/* Welcome header */}
@@ -264,24 +287,24 @@ export function LoginPage() {
                         <h2 style={{
                             fontSize: '1.75rem',
                             fontWeight: 800,
-                            color: '#0f172a',
+                            color: 'var(--color-text-primary)',
                             letterSpacing: '-0.02em',
                             marginBottom: '0.5rem',
                         }}>
                             Bienvenido de nuevo
                         </h2>
-                        <p style={{ fontSize: '0.9375rem', color: '#64748b', lineHeight: 1.5 }}>
+                        <p style={{ fontSize: '0.9375rem', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
                             Inicia sesión para acceder a tu panel de control
                         </p>
                     </div>
 
                     {/* Form card */}
-                    <div style={{
-                        background: 'white',
+                    <div className="login-form-card" style={{
+                        background: 'var(--color-surface)',
                         borderRadius: '20px',
                         padding: '2rem',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06)',
-                        border: '1px solid rgba(226,232,240,0.8)',
+                        boxShadow: 'var(--shadow-lg)',
+                        border: '1px solid var(--color-border)',
                     }}>
                         <form onSubmit={handleSubmit}>
                             {/* Email */}
@@ -290,7 +313,7 @@ export function LoginPage() {
                                     display: 'block',
                                     fontSize: '0.8125rem',
                                     fontWeight: 600,
-                                    color: '#374151',
+                                    color: 'var(--color-text-secondary)',
                                     marginBottom: '0.5rem',
                                 }}>
                                     Correo electrónico
@@ -301,7 +324,7 @@ export function LoginPage() {
                                         left: '14px',
                                         top: '50%',
                                         transform: 'translateY(-50%)',
-                                        color: '#9ca3af',
+                                        color: 'var(--color-text-muted)',
                                         pointerEvents: 'none',
                                     }} />
                                     <input
@@ -317,22 +340,22 @@ export function LoginPage() {
                                             paddingTop: '0.75rem',
                                             paddingBottom: '0.75rem',
                                             borderRadius: '12px',
-                                            border: '1.5px solid #e2e8f0',
-                                            background: '#f8fafc',
+                                            border: '1.5px solid var(--color-border)',
+                                            background: 'var(--color-surface-muted)',
                                             fontSize: '0.875rem',
-                                            color: '#1e293b',
+                                            color: 'var(--color-text-primary)',
                                             outline: 'none',
                                             transition: 'all 0.2s ease',
                                             boxSizing: 'border-box',
                                         }}
                                         onFocus={(e) => {
-                                            e.target.style.borderColor = '#6366f1';
-                                            e.target.style.background = 'white';
-                                            e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)';
+                                            e.target.style.borderColor = 'var(--color-brand-light)';
+                                            e.target.style.background = 'var(--color-surface)';
+                                            e.target.style.boxShadow = '0 0 0 3px var(--color-brand-100)';
                                         }}
                                         onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                            e.target.style.background = '#f8fafc';
+                                            e.target.style.borderColor = 'var(--color-border)';
+                                            e.target.style.background = 'var(--color-surface-muted)';
                                             e.target.style.boxShadow = 'none';
                                         }}
                                     />
@@ -345,7 +368,7 @@ export function LoginPage() {
                                     display: 'block',
                                     fontSize: '0.8125rem',
                                     fontWeight: 600,
-                                    color: '#374151',
+                                    color: 'var(--color-text-secondary)',
                                     marginBottom: '0.5rem',
                                 }}>
                                     Contraseña
@@ -356,7 +379,7 @@ export function LoginPage() {
                                         left: '14px',
                                         top: '50%',
                                         transform: 'translateY(-50%)',
-                                        color: '#9ca3af',
+                                        color: 'var(--color-text-muted)',
                                         pointerEvents: 'none',
                                     }} />
                                     <input
@@ -372,22 +395,22 @@ export function LoginPage() {
                                             paddingTop: '0.75rem',
                                             paddingBottom: '0.75rem',
                                             borderRadius: '12px',
-                                            border: '1.5px solid #e2e8f0',
-                                            background: '#f8fafc',
+                                            border: '1.5px solid var(--color-border)',
+                                            background: 'var(--color-surface-muted)',
                                             fontSize: '0.875rem',
-                                            color: '#1e293b',
+                                            color: 'var(--color-text-primary)',
                                             outline: 'none',
                                             transition: 'all 0.2s ease',
                                             boxSizing: 'border-box',
                                         }}
                                         onFocus={(e) => {
-                                            e.target.style.borderColor = '#6366f1';
-                                            e.target.style.background = 'white';
-                                            e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)';
+                                            e.target.style.borderColor = 'var(--color-brand-light)';
+                                            e.target.style.background = 'var(--color-surface)';
+                                            e.target.style.boxShadow = '0 0 0 3px var(--color-brand-100)';
                                         }}
                                         onBlur={(e) => {
-                                            e.target.style.borderColor = '#e2e8f0';
-                                            e.target.style.background = '#f8fafc';
+                                            e.target.style.borderColor = 'var(--color-border)';
+                                            e.target.style.background = 'var(--color-surface-muted)';
                                             e.target.style.boxShadow = 'none';
                                         }}
                                     />
@@ -399,7 +422,7 @@ export function LoginPage() {
                                             right: '14px',
                                             top: '50%',
                                             transform: 'translateY(-50%)',
-                                            color: '#9ca3af',
+                                            color: 'var(--color-text-muted)',
                                             background: 'transparent',
                                             border: 'none',
                                             cursor: 'pointer',
@@ -407,13 +430,103 @@ export function LoginPage() {
                                             display: 'flex',
                                             transition: 'color 0.2s',
                                         }}
-                                        onMouseEnter={(e) => (e.currentTarget.style.color = '#6366f1')}
-                                        onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}
+                                        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-brand)')}
+                                        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-muted)')}
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Forgot password link */}
+                            <div style={{ textAlign: 'right', marginBottom: '0.25rem', marginTop: '-0.75rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowResetForm(!showResetForm); setResetSent(false); setResetError(''); }}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--color-brand-light)',
+                                        fontSize: '0.8125rem',
+                                        fontWeight: 500,
+                                        cursor: 'pointer',
+                                        fontFamily: 'inherit',
+                                        padding: 0,
+                                        transition: 'color 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-brand-dark)')}
+                                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-brand-light)')}
+                                >
+                                    <KeyRound size={12} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
+                                    ¿Olvidaste tu contraseña?
+                                </button>
+                            </div>
+
+                            {/* Reset password inline form */}
+                            {showResetForm && (
+                                <div style={{
+                                    padding: '1rem',
+                                    borderRadius: '12px',
+                                    background: 'var(--color-brand-50)',
+                                    border: '1px solid var(--color-brand-200)',
+                                    marginBottom: '1rem',
+                                }}>
+                                    {resetSent ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-success)', fontSize: '0.875rem', fontWeight: 500 }}>
+                                            <CheckCircle size={18} />
+                                            <span>Enlace enviado a <strong>{resetEmail}</strong>. Revisa tu bandeja de entrada.</span>
+                                        </div>
+                                    ) : (
+                                        <form onSubmit={handleResetPassword}>
+                                            <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', marginBottom: '0.75rem' }}>
+                                                Introduce tu email y te enviaremos un enlace para restablecer la contraseña.
+                                            </p>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <input
+                                                    type="email"
+                                                    placeholder="tu@email.com"
+                                                    value={resetEmail}
+                                                    onChange={(e) => setResetEmail(e.target.value)}
+                                                    required
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: '0.625rem 0.75rem',
+                                                        borderRadius: '8px',
+                                                        border: '1.5px solid #c7d2fe',
+                                                        background: 'white',
+                                                        fontSize: '0.8125rem',
+                                                        outline: 'none',
+                                                        boxSizing: 'border-box' as const,
+                                                        fontFamily: 'inherit',
+                                                    }}
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={resetLoading}
+                                                    style={{
+                                                        padding: '0.625rem 1rem',
+                                                        borderRadius: '8px',
+                                                        border: 'none',
+                                                        background: 'var(--color-brand-light)',
+                                                        color: 'white',
+                                                        fontSize: '0.8125rem',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer',
+                                                        fontFamily: 'inherit',
+                                                        whiteSpace: 'nowrap' as const,
+                                                        opacity: resetLoading ? 0.6 : 1,
+                                                    }}
+                                                >
+                                                    {resetLoading ? 'Enviando…' : 'Enviar enlace'}
+                                                </button>
+                                            </div>
+                                            {resetError && (
+                                                <p style={{ color: 'var(--color-error)', fontSize: '0.75rem', marginTop: '0.5rem' }}>{resetError}</p>
+                                            )}
+                                        </form>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Error */}
                             {error && (
@@ -423,9 +536,9 @@ export function LoginPage() {
                                     gap: '0.5rem',
                                     padding: '0.75rem 1rem',
                                     borderRadius: '12px',
-                                    background: '#fef2f2',
-                                    color: '#dc2626',
-                                    border: '1px solid #fecaca',
+                                    background: 'var(--color-error-light)',
+                                    color: 'var(--color-error)',
+                                    border: '1px solid var(--color-error-light)',
                                     fontSize: '0.8125rem',
                                     fontWeight: 500,
                                     marginBottom: '1.25rem',
@@ -490,11 +603,11 @@ export function LoginPage() {
                         gap: '1rem',
                         margin: '1.5rem 0',
                     }}>
-                        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, #cbd5e1, transparent)' }} />
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <div style={{ flex: 1, height: '1px', background: `linear-gradient(90deg, transparent, var(--color-border), transparent)` }} />
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             o
                         </span>
-                        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, #cbd5e1, transparent)' }} />
+                        <div style={{ flex: 1, height: '1px', background: `linear-gradient(90deg, transparent, var(--color-border), transparent)` }} />
                     </div>
 
                     {/* Demo mode */}
@@ -505,9 +618,9 @@ export function LoginPage() {
                             width: '100%',
                             padding: '0.875rem',
                             borderRadius: '12px',
-                            border: '1.5px solid rgba(99,102,241,0.2)',
-                            background: 'rgba(238,242,255,0.8)',
-                            color: '#4F46E5',
+                            border: '1.5px solid var(--color-brand-200)',
+                            background: 'var(--color-brand-50)',
+                            color: 'var(--color-brand)',
                             fontSize: '0.9375rem',
                             fontWeight: 600,
                             cursor: 'pointer',
@@ -520,13 +633,13 @@ export function LoginPage() {
                             backdropFilter: 'blur(8px)',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(238,242,255,1)';
-                            e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)';
+                            e.currentTarget.style.background = 'var(--color-brand-100)';
+                            e.currentTarget.style.borderColor = 'var(--color-brand-200)';
                             e.currentTarget.style.transform = 'translateY(-1px)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(238,242,255,0.8)';
-                            e.currentTarget.style.borderColor = 'rgba(99,102,241,0.2)';
+                            e.currentTarget.style.background = 'var(--color-brand-50)';
+                            e.currentTarget.style.borderColor = 'var(--color-brand-200)';
                             e.currentTarget.style.transform = 'translateY(0)';
                         }}
                     >
@@ -539,13 +652,13 @@ export function LoginPage() {
                         textAlign: 'center',
                         marginTop: '1.5rem',
                         fontSize: '0.8125rem',
-                        color: '#94a3b8',
+                        color: 'var(--color-text-muted)',
                     }}>
                         ¿Problemas al acceder?{' '}
                         <button
                             style={{
                                 fontWeight: 600,
-                                color: '#6366f1',
+                                color: 'var(--color-brand-light)',
                                 background: 'transparent',
                                 border: 'none',
                                 cursor: 'pointer',

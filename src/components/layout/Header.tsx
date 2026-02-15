@@ -16,6 +16,7 @@ const pageTitles: Record<string, string> = {
     '/users': 'Gestión de Usuarios',
     '/users/create': 'Crear Usuario',
     '/payroll': 'Nóminas',
+    '/admin/analytics': 'Panel de Analítica',
     '/hr-inbox': 'Comunicación RRHH',
     '/committee': 'Comité de Empresa',
     '/directory': 'Directorio',

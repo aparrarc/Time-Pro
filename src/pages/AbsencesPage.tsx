@@ -244,28 +244,28 @@ export function AbsencesPage() {
             {/* Vacation balance */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="stat-card">
-                    <div className="stat-card-icon" style={{ background: '#ecfdf5' }}>
+                    <div className="stat-card-icon" style={{ background: 'var(--color-icon-bg-success)' }}>
                         <Palmtree size={18} style={{ color: '#10b981' }} />
                     </div>
                     <div className="stat-card-value">{availableDays}</div>
                     <div className="stat-card-label">Días disponibles</div>
                 </div>
                 <div className="stat-card">
-                    <div className="stat-card-icon" style={{ background: '#eef2ff' }}>
+                    <div className="stat-card-icon" style={{ background: 'var(--color-icon-bg-brand)' }}>
                         <CalendarDays size={18} style={{ color: '#6366f1' }} />
                     </div>
                     <div className="stat-card-value">{usedDays}</div>
                     <div className="stat-card-label">Días usados</div>
                 </div>
                 <div className="stat-card">
-                    <div className="stat-card-icon" style={{ background: '#f0f4ff' }}>
+                    <div className="stat-card-icon" style={{ background: 'var(--color-icon-bg-info)' }}>
                         <CalendarDays size={18} style={{ color: 'var(--color-primary)' }} />
                     </div>
                     <div className="stat-card-value">{totalVacation}</div>
                     <div className="stat-card-label">Total anual</div>
                 </div>
                 <div className="stat-card">
-                    <div className="stat-card-icon" style={{ background: '#fffbeb' }}>
+                    <div className="stat-card-icon" style={{ background: 'var(--color-icon-bg-warning)' }}>
                         <CalendarDays size={18} style={{ color: '#d97706' }} />
                     </div>
                     <div className="stat-card-value">{pendingCount}</div>

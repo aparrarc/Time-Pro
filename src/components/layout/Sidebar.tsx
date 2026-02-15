@@ -13,7 +13,14 @@ import {
     Shield,
     LogOut,
     ChevronRight,
-    Timer
+    Timer,
+    AlertTriangle,
+    Bell,
+    FileSearch,
+    CalendarClock,
+    Repeat,
+    FolderOpen,
+    FileText,
 } from 'lucide-react';
 import { useAppStore } from '../../store/appStore';
 import { Avatar } from '../ui';
@@ -52,12 +59,30 @@ const navSections = [
             { path: '/committee', icon: Building2, label: 'Comité de Empresa', badge: 'Nuevo' },
         ]
     },
+    {
+        label: 'Cumplimiento Legal',
+        items: [
+            { path: '/overtime', icon: AlertTriangle, label: 'Horas Extra', badge: 'S5' },
+            { path: '/calendar', icon: CalendarClock, label: 'Calendario Laboral', badge: 'S5' },
+            { path: '/inspection-export', icon: FileSearch, label: 'Exportar Inspección', badge: 'S5' },
+            { path: '/alerts', icon: Bell, label: 'Alertas', badge: 'S5' },
+        ]
+    },
+    {
+        label: 'Gestión Operativa',
+        items: [
+            { path: '/shifts', icon: Repeat, label: 'Turnos', badge: 'S6' },
+            { path: '/payroll-detail', icon: FileText, label: 'Nóminas Detalladas', badge: 'S6' },
+            { path: '/documents', icon: FolderOpen, label: 'Documentos', badge: 'S6' },
+        ]
+    },
 ];
 
 const adminSection = {
     label: 'Administración',
     items: [
         { path: '/users', icon: Users, label: 'Gestión Usuarios' },
+        { path: '/admin/analytics', icon: BarChart3, label: 'Analítica', badge: 'Nuevo' },
     ]
 };
 

@@ -215,7 +215,7 @@ export function DashboardPage() {
                 {isAdmin && (
                     <div className="stat-card">
                         <div className="stat-card-header">
-                            <div className="stat-card-icon" style={{ background: '#EDE9FE', color: '#7C3AED' }}>
+                            <div className="stat-card-icon" style={{ background: 'var(--color-icon-bg-brand)', color: '#7C3AED' }}>
                                 <Users size={20} />
                             </div>
                         </div>
@@ -271,7 +271,7 @@ export function DashboardPage() {
                 </Link>
 
                 <Link to="/payroll" className="module-card">
-                    <div className="module-card-icon" style={{ background: '#FEF3C7', color: '#D97706' }}>
+                    <div className="module-card-icon" style={{ background: 'var(--color-icon-bg-warning)', color: '#D97706' }}>
                         <Receipt size={24} />
                     </div>
                     <div className="module-card-content">
@@ -285,7 +285,7 @@ export function DashboardPage() {
                 </Link>
 
                 <Link to="/hr-inbox" className="module-card">
-                    <div className="module-card-icon" style={{ background: '#FCE7F3', color: '#DB2777' }}>
+                    <div className="module-card-icon" style={{ background: 'var(--color-icon-bg-error)', color: '#DB2777' }}>
                         <MessageSquare size={24} />
                     </div>
                     <div className="module-card-content">
@@ -299,7 +299,7 @@ export function DashboardPage() {
                 </Link>
 
                 <Link to="/committee" className="module-card">
-                    <div className="module-card-icon" style={{ background: '#ECFDF5', color: '#059669' }}>
+                    <div className="module-card-icon" style={{ background: 'var(--color-icon-bg-success)', color: '#059669' }}>
                         <Building2 size={24} />
                     </div>
                     <div className="module-card-content">

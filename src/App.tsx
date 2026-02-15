@@ -14,7 +14,16 @@ import {
   HRInboxPage,
   CommitteePage,
   DirectoryPage,
-  PrivacyPage
+  PrivacyPage,
+  ResetPasswordPage,
+  AdminDashboardPage,
+  OvertimePage,
+  WorkCalendarPage,
+  InspectionExportPage,
+  AlertsPage,
+  ShiftsPage,
+  PayrollDetailPage,
+  DocumentsPage,
 } from './pages';
 import { useAppStore } from './store/appStore';
 import './index.css';
@@ -52,6 +61,7 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Protected routes — Core */}
           <Route path="/" element={
@@ -101,9 +111,63 @@ function App() {
               <DirectoryPage />
             </ProtectedRoute>
           } />
+          <Route path="/admin/analytics" element={
+            <ProtectedRoute>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          } />
           <Route path="/privacy" element={
             <ProtectedRoute>
               <PrivacyPage />
+            </ProtectedRoute>
+          } />
+
+          {/* Sprint 5: Legal Compliance */}
+          <Route path="/overtime" element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <OvertimePage />
+              </AdminRoute>
+            </ProtectedRoute>
+          } />
+          <Route path="/calendar" element={
+            <ProtectedRoute>
+              <WorkCalendarPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/inspection-export" element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <InspectionExportPage />
+              </AdminRoute>
+            </ProtectedRoute>
+          } />
+          <Route path="/alerts" element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <AlertsPage />
+              </AdminRoute>
+            </ProtectedRoute>
+          } />
+
+          {/* Sprint 6: Operational Value */}
+          <Route path="/shifts" element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <ShiftsPage />
+              </AdminRoute>
+            </ProtectedRoute>
+          } />
+          <Route path="/payroll-detail" element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <PayrollDetailPage />
+              </AdminRoute>
+            </ProtectedRoute>
+          } />
+          <Route path="/documents" element={
+            <ProtectedRoute>
+              <DocumentsPage />
             </ProtectedRoute>
           } />
 

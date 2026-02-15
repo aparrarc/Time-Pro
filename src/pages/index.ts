@@ -11,3 +11,16 @@ export { HRInboxPage } from './HRInboxPage';
 export { CommitteePage } from './CommitteePage';
 export { DirectoryPage } from './DirectoryPage';
 export { PrivacyPage } from './PrivacyPage';
+export { ResetPasswordPage } from './ResetPasswordPage';
+export { AdminDashboardPage } from './AdminDashboardPage';
+
+// Sprint 5: Legal Compliance
+export { OvertimePage } from './OvertimePage';
+export { WorkCalendarPage } from './WorkCalendarPage';
+export { InspectionExportPage } from './InspectionExportPage';
+export { AlertsPage } from './AlertsPage';
+
+// Sprint 6: Operational Value
+export { ShiftsPage } from './ShiftsPage';
+export { PayrollDetailPage } from './PayrollDetailPage';
+export { DocumentsPage } from './DocumentsPage';

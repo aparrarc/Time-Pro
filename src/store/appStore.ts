@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../lib/supabase';
+import { logAuditEvent } from '../lib/auditLog';
 import type { User, TimeEntry, Break, WorkStatus, AbsenceRequest } from '../types';
 import { isDemoMode, setDemoMode, DEMO_USER, DEMO_USERS, DEMO_TIME_ENTRIES, DEMO_ABSENCES, DEMO_LIVE_ATTENDANCE } from '../lib/demoData';
 
@@ -272,9 +273,28 @@ export const useAppStore = create<AppState>()(
                     return;
                 }
 
+                // Capture geolocation if available
+                let latitude: number | null = null;
+                let longitude: number | null = null;
+                try {
+                    if ('geolocation' in navigator) {
+                        const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                                enableHighAccuracy: true,
+                                timeout: 5000,
+                                maximumAge: 60000,
+                            });
+                        });
+                        latitude = pos.coords.latitude;
+                        longitude = pos.coords.longitude;
+                    }
+                } catch {
+                    // Geolocation denied or unavailable — continue without coords
+                }
+
                 const { data, error } = await supabase
                     .from('time_entries')
-                    .insert([{ user_id: user.id, clock_in: new Date().toISOString() }])
+                    .insert([{ user_id: user.id, clock_in: new Date().toISOString(), latitude, longitude }])
                     .select()
                     .single();
 
@@ -285,6 +305,7 @@ export const useAppStore = create<AppState>()(
                         todayEntries: [data as TimeEntry, ...get().todayEntries]
                     });
                     get().addToast('success', '✅ Entrada fichada correctamente');
+                    logAuditEvent({ action: 'clock_in', entityType: 'time_entry', entityId: data.id, details: { latitude, longitude } });
                 } else {
                     get().addToast('error', 'Error al fichar entrada');
                 }
@@ -325,6 +346,7 @@ export const useAppStore = create<AppState>()(
                     });
                     get().updateTodayHours();
                     get().addToast('info', '🏠 Salida fichada — ¡buen trabajo!');
+                    logAuditEvent({ action: 'clock_out', entityType: 'time_entry', entityId: data.id });
                 } else {
                     get().addToast('error', 'Error al fichar salida');
                 }
@@ -362,6 +384,7 @@ export const useAppStore = create<AppState>()(
                         currentStatus: 'on_break'
                     });
                     get().addToast('info', '☕ Pausa iniciada');
+                    logAuditEvent({ action: 'break_start', entityType: 'break', entityId: data.id });
                 } else {
                     get().addToast('error', 'Error al iniciar pausa');
                 }
@@ -388,6 +411,7 @@ export const useAppStore = create<AppState>()(
                         currentStatus: 'working'
                     });
                     get().addToast('success', '💪 De vuelta al trabajo');
+                    logAuditEvent({ action: 'break_end', entityType: 'break', entityId: activeBreak.id });
                 } else {
                     get().addToast('error', 'Error al terminar pausa');
                 }
@@ -579,6 +603,7 @@ export const useAppStore = create<AppState>()(
                 if (data && !error) {
                     set({ absenceRequests: [data as AbsenceRequest, ...get().absenceRequests] });
                     get().addToast('success', '📋 Solicitud de ausencia enviada');
+                    logAuditEvent({ action: 'absence_request', entityType: 'absence_request', entityId: data.id });
                 } else {
                     get().addToast('error', 'Error al enviar solicitud');
                 }
@@ -623,6 +648,7 @@ export const useAppStore = create<AppState>()(
                             a.id === id ? { ...a, status } : a
                         )
                     });
+                    logAuditEvent({ action: 'absence_approval', entityType: 'absence_request', entityId: id, details: { status } });
                 }
             },
 
@@ -732,6 +758,7 @@ export const useAppStore = create<AppState>()(
             },
 
             logout: async () => {
+                logAuditEvent({ action: 'user_logout' });
                 if (!isDemoMode) {
                     try { await supabase.auth.signOut(); } catch { /* ignore */ }
                 }

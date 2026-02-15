@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Receipt, Download, Calendar, FileText, TrendingUp, Euro, Clock, AlertCircle } from 'lucide-react';
+import { Receipt, Download, Calendar, FileText, TrendingUp, Euro, Clock, AlertCircle, PenTool, CheckCircle } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAppStore } from '../store/appStore';
+import { SignaturePad } from '../components/SignaturePad';
+import { logAuditEvent } from '../lib/auditLog';
 
 interface Payroll {
     id: string;
@@ -33,9 +35,12 @@ export function PayrollPage() {
     const [payrolls, setPayrolls] = useState<Payroll[]>([]);
     const [loading, setLoading] = useState(true);
     const [downloading, setDownloading] = useState<string | null>(null);
+    const [signingPayrollId, setSigningPayrollId] = useState<string | null>(null);
+    const [signedPayrolls, setSignedPayrolls] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         loadPayrolls();
+        loadSignatures();
     }, []);
 
     const loadPayrolls = async () => {
@@ -59,6 +64,41 @@ export function PayrollPage() {
             setPayrolls(demoPayrolls);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadSignatures = async () => {
+        if (!isSupabaseConfigured() || !user) return;
+        const { data } = await supabase
+            .from('payroll_signatures')
+            .select('payroll_id')
+            .eq('user_id', user.id);
+        if (data) {
+            setSignedPayrolls(new Set(data.map((s: any) => s.payroll_id)));
+        }
+    };
+
+    const handleSign = async (signatureDataUrl: string) => {
+        if (!signingPayrollId || !user) return;
+        try {
+            if (isSupabaseConfigured()) {
+                const { error } = await supabase
+                    .from('payroll_signatures')
+                    .insert({
+                        payroll_id: signingPayrollId,
+                        user_id: user.id,
+                        signature_data: signatureDataUrl,
+                        user_agent: navigator.userAgent,
+                    });
+                if (error) throw error;
+            }
+            setSignedPayrolls(prev => new Set([...prev, signingPayrollId]));
+            addToast('success', '✅ Nómina firmada correctamente');
+            logAuditEvent({ action: 'payroll_signed', entityType: 'payroll', entityId: signingPayrollId });
+        } catch {
+            addToast('error', 'Error al guardar la firma');
+        } finally {
+            setSigningPayrollId(null);
         }
     };
 
@@ -120,7 +160,7 @@ export function PayrollPage() {
             <div className="grid-stats" style={{ marginBottom: '1.5rem' }}>
                 <div className="stat-card">
                     <div className="stat-card-header">
-                        <div className="stat-card-icon" style={{ background: '#ECFDF5', color: '#059669' }}>
+                        <div className="stat-card-icon" style={{ background: 'var(--color-icon-bg-success)', color: '#059669' }}>
                             <Euro size={20} />
                         </div>
                     </div>
@@ -160,7 +200,7 @@ export function PayrollPage() {
 
                 <div className="stat-card">
                     <div className="stat-card-header">
-                        <div className="stat-card-icon" style={{ background: '#EDE9FE', color: '#7C3AED' }}>
+                        <div className="stat-card-icon" style={{ background: 'var(--color-icon-bg-brand)', color: '#7C3AED' }}>
                             <TrendingUp size={20} />
                         </div>
                     </div>
@@ -204,6 +244,7 @@ export function PayrollPage() {
                                     <th>Estado</th>
                                     <th>Fecha pago</th>
                                     <th></th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -239,6 +280,22 @@ export function PayrollPage() {
                                                 PDF
                                             </button>
                                         </td>
+                                        <td>
+                                            {signedPayrolls.has(payroll.id) ? (
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#16a34a', fontSize: '0.8125rem', fontWeight: 600 }}>
+                                                    <CheckCircle size={14} /> Firmada
+                                                </span>
+                                            ) : payroll.status === 'paid' ? (
+                                                <button
+                                                    className="btn btn-ghost btn-xs"
+                                                    onClick={() => setSigningPayrollId(payroll.id)}
+                                                    style={{ color: '#6366f1' }}
+                                                >
+                                                    <PenTool size={14} />
+                                                    Firmar
+                                                </button>
+                                            ) : null}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -261,6 +318,29 @@ export function PayrollPage() {
                     </button>
                 </div>
             </div>
+
+            {/* Signature Modal */}
+            {signingPayrollId && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.5)',
+                    backdropFilter: 'blur(4px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                    padding: '1rem',
+                }}>
+                    <SignaturePad
+                        onConfirm={handleSign}
+                        onCancel={() => setSigningPayrollId(null)}
+                    />
+                </div>
+            )}
         </div>
     );
 }

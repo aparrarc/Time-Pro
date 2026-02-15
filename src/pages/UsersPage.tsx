@@ -336,7 +336,7 @@ export function UsersPage() {
                                     <button
                                         onClick={() => updateAbsenceStatus(absence.id, 'approved')}
                                         className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                                        style={{ background: '#ecfdf5', color: '#10b981' }}
+                                        style={{ background: 'var(--color-icon-bg-success)', color: '#10b981' }}
                                         onMouseEnter={(e) => e.currentTarget.style.background = '#d1fae5'}
                                         onMouseLeave={(e) => e.currentTarget.style.background = '#ecfdf5'}
                                     >
@@ -346,7 +346,7 @@ export function UsersPage() {
                                     <button
                                         onClick={() => updateAbsenceStatus(absence.id, 'rejected')}
                                         className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                                        style={{ background: '#fef2f2', color: '#ef4444' }}
+                                        style={{ background: 'var(--color-icon-bg-error)', color: '#ef4444' }}
                                         onMouseEnter={(e) => e.currentTarget.style.background = '#fee2e2'}
                                         onMouseLeave={(e) => e.currentTarget.style.background = '#fef2f2'}
                                     >

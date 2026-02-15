@@ -1,16 +1,55 @@
-import { Bell, Globe, Shield, LogOut, ChevronRight, Camera, Mail, Phone, Building, Briefcase } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, Globe, Shield, LogOut, ChevronRight, Camera, Mail, Phone, Building, Briefcase, Sun, Moon, Monitor } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Avatar } from '../components/ui';
 import { useAppStore } from '../store/appStore';
 
+type ThemeMode = 'light' | 'dark' | 'system';
+
+function getStoredTheme(): ThemeMode {
+    return (localStorage.getItem('timetrack-theme') as ThemeMode) || 'light';
+}
+
+function applyTheme(mode: ThemeMode) {
+    let resolved: 'light' | 'dark' = mode === 'system'
+        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        : mode;
+    if (resolved === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+    } else {
+        delete document.documentElement.dataset.theme;
+    }
+    localStorage.setItem('timetrack-theme', mode);
+}
+
 export function SettingsPage() {
     const navigate = useNavigate();
     const { user, language, logout } = useAppStore();
+    const [theme, setTheme] = useState<ThemeMode>(getStoredTheme);
+
+    useEffect(() => {
+        applyTheme(theme);
+    }, [theme]);
+
+    // Listen for system theme changes when in 'system' mode
+    useEffect(() => {
+        if (theme !== 'system') return;
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const handler = () => applyTheme('system');
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, [theme]);
 
     const handleLogout = async () => {
         await logout();
         navigate('/login');
     };
+
+    const themeOptions: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
+        { value: 'light', label: 'Claro', icon: Sun },
+        { value: 'dark', label: 'Oscuro', icon: Moon },
+        { value: 'system', label: 'Sistema', icon: Monitor },
+    ];
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -33,7 +72,7 @@ export function SettingsPage() {
                         />
                         <button
                             className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center"
-                            style={{ background: 'var(--color-primary)', border: '2px solid white' }}
+                            style={{ background: 'var(--color-brand)', border: '2px solid var(--color-surface)' }}
                         >
                             <Camera size={12} className="text-white" />
                         </button>
@@ -62,7 +101,7 @@ export function SettingsPage() {
                         { icon: Briefcase, label: 'Fecha alta', value: user?.hire_date ? new Date(user.hire_date).toLocaleDateString('es-ES') : 'No registrada' },
                     ].map(({ icon: Icon, label, value }) => (
                         <div key={label} className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'var(--color-bg-secondary)' }}>
+                            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'var(--color-surface-hover)' }}>
                                 <Icon size={16} style={{ color: 'var(--color-text-muted)' }} />
                             </div>
                             <div>
@@ -80,15 +119,68 @@ export function SettingsPage() {
                     Preferencias
                 </h3>
                 <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                    {/* Theme / Appearance */}
+                    <div
+                        className="w-full flex items-center gap-4 py-4 px-5"
+                        style={{ borderBottom: '1px solid var(--color-border)' }}
+                    >
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-icon-bg-brand)' }}>
+                            {theme === 'dark'
+                                ? <Moon size={18} style={{ color: 'var(--color-brand)' }} />
+                                : <Sun size={18} style={{ color: 'var(--color-brand)' }} />
+                            }
+                        </div>
+                        <div className="flex-1 text-left">
+                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Apariencia</p>
+                            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                                {theme === 'light' ? 'Modo claro' : theme === 'dark' ? 'Modo oscuro' : 'Automático del sistema'}
+                            </p>
+                        </div>
+                        <div style={{
+                            display: 'flex',
+                            gap: '0.25rem',
+                            padding: '0.25rem',
+                            background: 'var(--color-surface-hover)',
+                            borderRadius: 'var(--radius-lg)',
+                        }}>
+                            {themeOptions.map(({ value, label, icon: ThemeIcon }) => (
+                                <button
+                                    key={value}
+                                    onClick={() => setTheme(value)}
+                                    title={label}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.375rem',
+                                        padding: '0.375rem 0.75rem',
+                                        borderRadius: 'var(--radius-md)',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 600,
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        transition: 'all 150ms',
+                                        fontFamily: 'inherit',
+                                        background: theme === value ? 'var(--color-surface)' : 'transparent',
+                                        color: theme === value ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                                        boxShadow: theme === value ? 'var(--shadow-xs)' : 'none',
+                                    }}
+                                >
+                                    <ThemeIcon size={14} />
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Language */}
                     <button
                         className="w-full flex items-center gap-4 py-4 px-5 transition-colors"
                         style={{ borderBottom: '1px solid var(--color-border)' }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-secondary)'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-hover)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#eef2ff' }}>
-                            <Globe size={18} style={{ color: '#6366f1' }} />
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-icon-bg-brand)' }}>
+                            <Globe size={18} style={{ color: 'var(--color-brand)' }} />
                         </div>
                         <div className="flex-1 text-left">
                             <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Idioma</p>
@@ -100,11 +192,11 @@ export function SettingsPage() {
                     {/* Notifications */}
                     <button
                         className="w-full flex items-center gap-4 py-4 px-5 transition-colors"
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-secondary)'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-hover)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#fef2f2' }}>
-                            <Bell size={18} style={{ color: '#ef4444' }} />
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-icon-bg-error)' }}>
+                            <Bell size={18} style={{ color: 'var(--color-error)' }} />
                         </div>
                         <div className="flex-1 text-left">
                             <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Notificaciones</p>
@@ -125,11 +217,11 @@ export function SettingsPage() {
                         to="/privacy"
                         className="w-full flex items-center gap-4 py-4 px-5 transition-colors"
                         style={{ display: 'flex', borderBottom: '1px solid var(--color-border)' }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-secondary)'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-hover)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#ecfdf5' }}>
-                            <Shield size={18} style={{ color: '#10b981' }} />
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-icon-bg-success)' }}>
+                            <Shield size={18} style={{ color: 'var(--color-success)' }} />
                         </div>
                         <div className="flex-1 text-left">
                             <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Privacidad RGPD</p>
@@ -144,9 +236,13 @@ export function SettingsPage() {
             <button
                 onClick={handleLogout}
                 className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
-                style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#fee2e2'}
-                onMouseLeave={(e) => e.currentTarget.style.background = '#fef2f2'}
+                style={{
+                    background: 'var(--color-error-light)',
+                    color: 'var(--color-error)',
+                    border: '1px solid var(--color-error-light)',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.85'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
             >
                 <LogOut size={18} />
                 Cerrar sesión

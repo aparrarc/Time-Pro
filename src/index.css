@@ -71,10 +71,18 @@
   /* Sidebar width */
   --sidebar-width: 272px;
   --sidebar-collapsed-width: 72px;
+
+  /* Icon backgrounds — Light mode */
+  --color-icon-bg-brand: #EEF2FF;
+  --color-icon-bg-success: #D1FAE5;
+  --color-icon-bg-warning: #FEF3C7;
+  --color-icon-bg-error: #FEE2E2;
+  --color-icon-bg-info: #DBEAFE;
 }
 
 /* ═══ Dark Mode ═══ */
-.dark {
+[data-theme="dark"] {
+  /* Background / Surface */
   --color-bg: #0F172A;
   --color-surface: #1E293B;
   --color-surface-hover: #334155;
@@ -83,17 +91,77 @@
   --color-border: #334155;
   --color-border-light: #1E293B;
 
+  /* Sidebar */
   --color-sidebar-bg: #0B0F1A;
   --color-sidebar-hover: #1E1B4B;
 
+  /* Text */
   --color-text-primary: #F1F5F9;
   --color-text-secondary: #94A3B8;
   --color-text-muted: #64748B;
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  /* Brand — adjusted for dark backgrounds */
+  --color-brand-50: rgba(79, 70, 229, 0.15);
+  --color-brand-100: rgba(79, 70, 229, 0.25);
+  --color-brand-200: rgba(99, 102, 241, 0.35);
+
+  /* Status Colors — dark-adapted light tints */
+  --color-success-light: rgba(16, 185, 129, 0.15);
+  --color-warning-light: rgba(245, 158, 11, 0.15);
+  --color-error-light: rgba(239, 68, 68, 0.15);
+  --color-info-light: rgba(59, 130, 246, 0.15);
+
+  /* Shadows — higher opacity for dark */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+
+  /* Dark-aware icon backgrounds */
+  --color-icon-bg-brand: rgba(99, 102, 241, 0.15);
+  --color-icon-bg-success: rgba(16, 185, 129, 0.15);
+  --color-icon-bg-warning: rgba(245, 158, 11, 0.15);
+  --color-icon-bg-error: rgba(239, 68, 68, 0.15);
+  --color-icon-bg-info: rgba(59, 130, 246, 0.15);
+}
+
+/* Dark mode specific component overrides */
+[data-theme="dark"] .badge-success {
+  color: #6EE7B7;
+}
+
+[data-theme="dark"] .badge-warning {
+  color: #FCD34D;
+}
+
+[data-theme="dark"] .badge-error {
+  color: #FCA5A5;
+}
+
+[data-theme="dark"] .quick-clock-btn.active {
+  background: rgba(239, 68, 68, 0.2);
+  color: #FCA5A5;
+}
+
+[data-theme="dark"] .input:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+[data-theme="dark"] .input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+}
+
+[data-theme="dark"] .consent-banner {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #64748B;
 }
 
 /* ═══ Base Reset ═══ */
