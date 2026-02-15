@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard,
     Clock,
@@ -12,7 +12,7 @@ import {
     Contact,
     Shield,
     LogOut,
-    ChevronRight,
+
     Timer,
     AlertTriangle,
     Bell,
@@ -21,6 +21,10 @@ import {
     Repeat,
     FolderOpen,
     FileText,
+
+    ClipboardList,
+    Wallet,
+    FileCode2,
 } from 'lucide-react';
 import { useAppStore } from '../../store/appStore';
 import { Avatar } from '../ui';
@@ -76,6 +80,13 @@ const navSections = [
             { path: '/documents', icon: FolderOpen, label: 'Documentos', badge: 'S6' },
         ]
     },
+    {
+        label: 'Diferenciación',
+        items: [
+            { path: '/surveys', icon: ClipboardList, label: 'Encuestas Clima', badge: 'S7' },
+            { path: '/expenses', icon: Wallet, label: 'Gastos', badge: 'S7' },
+        ]
+    },
 ];
 
 const adminSection = {
@@ -83,6 +94,7 @@ const adminSection = {
     items: [
         { path: '/users', icon: Users, label: 'Gestión Usuarios' },
         { path: '/admin/analytics', icon: BarChart3, label: 'Analítica', badge: 'Nuevo' },
+        { path: '/siltra-export', icon: FileCode2, label: 'Exportación SILTRA', badge: 'S7' },
     ]
 };
 
@@ -95,7 +107,6 @@ const roleLabels: Record<string, string> = {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const { user, currentStatus, logout } = useAppStore();
-    const location = useLocation();
     const isAdmin = user?.role === 'admin';
 
     const allSections = isAdmin ? [...navSections, adminSection] : navSections;

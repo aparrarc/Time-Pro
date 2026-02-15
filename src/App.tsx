@@ -24,7 +24,12 @@ import {
   ShiftsPage,
   PayrollDetailPage,
   DocumentsPage,
+  OnboardingPage,
+  SurveysPage,
+  ExpensesPage,
+  SiltraExportPage,
 } from './pages';
+import { InstallPrompt } from './components/InstallPrompt';
 import { useAppStore } from './store/appStore';
 import './index.css';
 
@@ -171,6 +176,30 @@ function App() {
             </ProtectedRoute>
           } />
 
+          {/* Sprint 7: Differentiation */}
+          <Route path="/onboarding" element={
+            <ProtectedRoute>
+              <OnboardingPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/surveys" element={
+            <ProtectedRoute>
+              <SurveysPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/expenses" element={
+            <ProtectedRoute>
+              <ExpensesPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/siltra-export" element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <SiltraExportPage />
+              </AdminRoute>
+            </ProtectedRoute>
+          } />
+
           {/* Admin routes */}
           <Route path="/users" element={
             <ProtectedRoute>
@@ -190,6 +219,7 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <InstallPrompt />
       </BrowserRouter>
     </div>
   );

@@ -303,3 +303,99 @@ export interface HRDocument {
     // Joined
     user_name?: string;
 }
+
+// ── Sprint 7: Differentiation Types ───────────────────
+
+// Onboarding
+export interface OnboardingProgress {
+    id: string;
+    user_id: string;
+    step_welcome: boolean;
+    step_profile: boolean;
+    step_preferences: boolean;
+    step_ready: boolean;
+    completed: boolean;
+    completed_at?: string;
+    created_at: string;
+}
+
+// Surveys
+export type SurveyStatus = 'draft' | 'active' | 'closed' | 'archived';
+export type QuestionType = 'rating' | 'text' | 'multiple_choice' | 'yes_no';
+
+export interface Survey {
+    id: string;
+    title: string;
+    description?: string;
+    status: SurveyStatus;
+    is_anonymous: boolean;
+    start_date?: string;
+    end_date?: string;
+    created_by?: string;
+    created_at: string;
+    // Computed
+    questions_count?: number;
+    responses_count?: number;
+}
+
+export interface SurveyQuestion {
+    id: string;
+    survey_id: string;
+    question_text: string;
+    question_type: QuestionType;
+    options?: string[];
+    sort_order: number;
+    is_required: boolean;
+    created_at: string;
+}
+
+export interface SurveyResponse {
+    id: string;
+    survey_id: string;
+    question_id: string;
+    user_id?: string;
+    rating_value?: number;
+    text_value?: string;
+    choice_value?: string;
+    submitted_at: string;
+}
+
+// Expenses
+export type ExpenseCategory = 'transport' | 'meals' | 'accommodation' | 'supplies' | 'training' | 'other';
+export type ExpenseStatus = 'pending' | 'approved' | 'rejected' | 'reimbursed';
+
+export interface Expense {
+    id: string;
+    user_id: string;
+    category: ExpenseCategory;
+    amount: number;
+    currency: string;
+    description: string;
+    expense_date: string;
+    receipt_url?: string;
+    receipt_name?: string;
+    status: ExpenseStatus;
+    approved_by?: string;
+    approved_at?: string;
+    rejection_reason?: string;
+    created_at: string;
+    // Joined
+    user_name?: string;
+}
+
+// SILTRA Export
+export type SiltraExportType = 'AFI' | 'FDI' | 'FAN';
+export type SiltraExportStatus = 'generated' | 'sent' | 'accepted' | 'rejected';
+
+export interface SiltraExport {
+    id: string;
+    export_type: SiltraExportType;
+    period_month?: number;
+    period_year: number;
+    file_name: string;
+    records_count: number;
+    status: SiltraExportStatus;
+    generated_by?: string;
+    notes?: string;
+    created_at: string;
+}

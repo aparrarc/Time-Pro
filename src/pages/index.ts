@@ -24,3 +24,9 @@ export { AlertsPage } from './AlertsPage';
 export { ShiftsPage } from './ShiftsPage';
 export { PayrollDetailPage } from './PayrollDetailPage';
 export { DocumentsPage } from './DocumentsPage';
+
+// Sprint 7: Differentiation
+export { OnboardingPage } from './OnboardingPage';
+export { SurveysPage } from './SurveysPage';
+export { ExpensesPage } from './ExpensesPage';
+export { SiltraExportPage } from './SiltraExportPage';
