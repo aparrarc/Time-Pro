@@ -1,0 +1,13 @@
+export { DashboardPage } from './DashboardPage';
+export { LoginPage } from './LoginPage';
+export { HistoryPage } from './HistoryPage';
+export { AbsencesPage } from './AbsencesPage';
+export { ReportsPage } from './ReportsPage';
+export { SettingsPage } from './SettingsPage';
+export { UsersPage } from './UsersPage';
+export { UserCreatePage } from './UserCreatePage';
+export { PayrollPage } from './PayrollPage';
+export { HRInboxPage } from './HRInboxPage';
+export { CommitteePage } from './CommitteePage';
+export { DirectoryPage } from './DirectoryPage';
+export { PrivacyPage } from './PrivacyPage';
